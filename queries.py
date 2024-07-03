@@ -13,7 +13,7 @@ def exec_query_pandas(connection: sqlite3.Connection,query:str) -> list[pd.DataF
     results = []
     with open(config.QUERY_DIR()+"/"+query+".sql") as file:
         for query in file.read().split(";"):
-            results.append(pd.read_sql(query,connection))
+            results.append(pd.read_sql_query(query,connection))
     return results
 
 def rc(Str:str,char:str) -> str:
@@ -47,8 +47,8 @@ class CoopDb:
     def commit(self) -> None:
         self.con.commit()
 
-    def read_table(self, table: str) -> pd.DataFrame:
-        return pd.read_sql(self.con, "SELECT * FROM "+table+" ;")
+    def read_table(self, table: str):
+        return pd.read_sql_query("SELECT * FROM "+table+";",self.con)
 
     def read_grade(self,studentid: int):
 
@@ -67,7 +67,8 @@ class CoopDb:
 
         grade_index = 0
         for name in config.GRADE_NAMES():
-            if GRADE_DICT()[name] > b_day
+            if GRADE_DICT()[name] > b_day:
+                pass
             #TODO: FINISH THIS FUNCTION
 
 
@@ -90,7 +91,7 @@ class CoopDb:
         try:
             ic(query)
             cur = self.con.execute(query,(name,desc,hour,member_cost,regular_cost)) 
-            return cur
+            return cur.fetchall()[0][0]
         except sqlite3.Error as er:
             ic(er.sqlite_errorcode)
             ic(er.sqlite_errorname)
@@ -111,10 +112,10 @@ class CoopDb:
                    phone3: int | None,
                    email: str,
                    is_member: bool,
-                   note: str | None):
+                   note: str | None) -> int:
 
         query = read_queries("add_family")[0]
-        '''Python wrapper for queries/add_family.sql. Returns a sql error if one occurs'''
+        '''Python wrapper for queries/add_family.sql. Raises a sql error if one occurs and returns the id of the insert'''
 
         try:
             cur = self.con.execute(query, 
@@ -131,7 +132,7 @@ class CoopDb:
                                email,
                                is_member,
                                note))
-            return cur
+            return cur.fetchall()[0][0]
         except sqlite3.Error as er:
             ic(er.sqlite_errorcode)
             ic(er.sqlite_errorname)
@@ -143,9 +144,11 @@ class CoopDb:
             birth_year: int | None, 
             birth_month: int | None, 
             birth_day: int | None, 
+            family_id: int,
             first_id: int | None, 
             second_id: int | None, 
-            grades_behind: int = 0) -> Any:
+            grade_offset: int = 0,
+            ) -> Any:
 
         '''Python wrapper for queries/add_child.sql. Returns a sql error if one occurs'''
 
@@ -156,10 +159,11 @@ class CoopDb:
                              birth_year,
                              birth_month,
                              birth_day,
-                             grades_behind,
+                             family_id,
                              first_id,
-                             second_id))
-            return cur
+                             second_id,
+                             grade_offset))
+            return cur.fetchall()[0][0]
         except sqlite3.Error as er:
 
             ic(er.sqlite_errorcode)

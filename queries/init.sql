@@ -3,7 +3,7 @@ CREATE TABLE families(
 	parent_mn TEXT NOT NULL,
 	parent_sec TEXT NOT NULL,
 	last_name TEXT NOT NULL,
-	street TEXT NOT NULL UNIQUE,
+	street TEXT NOT NULL,
 	city TEXT NOT NULL,
 	state TEXT NOT NULL,
 	zip INTEGER NOT NULL,
@@ -20,11 +20,13 @@ CREATE TABLE children(
 	birth_year INTEGER NOT NULL,
 	birth_month INTEGER NOT NULL,
 	birth_day INTEGER NOT NULL,
-	grade_offset INTEGER,
+	family_id INTEGER NOT NULL,
 	first_id INTEGER,
 	second_id INTEGER,
+	grade_offset INTEGER,
 	FOREIGN KEY(first_id) REFERENCES classes(id),
-	FOREIGN KEY(second_id) REFERENCES classes(id)
+	FOREIGN KEY(second_id) REFERENCES classes(id),
+	FOREIGN KEY(family_id) REFERENCES family(id)
 );
 
 CREATE TABLE classes(
@@ -34,13 +36,4 @@ CREATE TABLE classes(
 	HOUR INTEGER NOT NULL,
 	member_cost INTEGER,
 	regular_cost INTEGER
-);
-
-CREATE TABLE childrenfamily(
-	id INTEGER PRIMARY KEY,
-	family_id INTEGER,
-	child_id INTEGER,
-	UNIQUE(family_id, child_id),
-	FOREIGN KEY (family_id) REFERENCES families(id),
-	FOREIGN KEY (child_id) REFERENCES children(id)
 );
