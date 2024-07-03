@@ -12,7 +12,7 @@ CREATE TABLE families(
 	phone3 INTEGER,
 	email TEXT NOT NULL,
 	is_member BOOLEAN NOT NULL,
-	noteTEXT
+	note TEXT
 );
 CREATE TABLE children(
 	id INTEGER PRIMARY KEY,

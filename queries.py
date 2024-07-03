@@ -4,6 +4,9 @@ from typing import Any
 from icecream import ic
 import config
 import pandas as pd
+import datetime
+
+from gradedates import GRADE_DICT
 
 
 def exec_query_pandas(connection: sqlite3.Connection,query:str) -> list[pd.DataFrame]:
@@ -47,12 +50,40 @@ class CoopDb:
     def read_table(self, table: str) -> pd.DataFrame:
         return pd.read_sql(self.con, "SELECT * FROM "+table+" ;")
 
+    def read_grade(self,studentid: int):
+
+        assert type(studentid) == int
+
+        cur = self.con.execute("SELECT birth_day, birth_month, birth_year, grade_offset FROM children WHERE id = ?", (studentid,))
+
+        out = cur.fetchall()[0]
+
+        b_day = out[0]
+        b_month = out[1]
+        b_year = out[2]
+        offset = out[3]
+
+        b_day = datetime.date(b_year,b_month,b_day)+datetime.timedelta(days = 365*offset)
+
+        grade_index = 0
+        for name in config.GRADE_NAMES():
+            if GRADE_DICT()[name] > b_day
+            #TODO: FINISH THIS FUNCTION
+
+
+
+        return out
+
+
+
+
     def add_class(self,
                   name: str,
                   desc: str | None,
                   hour: int,
                   member_cost: int,
                   regular_cost: int):
+        '''Python wrapper for queries/add_class.sql. Returns a sql error if one occurs'''
 
         query = read_queries("add_class")[0]
 
@@ -63,6 +94,7 @@ class CoopDb:
         except sqlite3.Error as er:
             ic(er.sqlite_errorcode)
             ic(er.sqlite_errorname)
+            raise er
 
 
 
@@ -82,6 +114,7 @@ class CoopDb:
                    note: str | None):
 
         query = read_queries("add_family")[0]
+        '''Python wrapper for queries/add_family.sql. Returns a sql error if one occurs'''
 
         try:
             cur = self.con.execute(query, 
@@ -102,6 +135,7 @@ class CoopDb:
         except sqlite3.Error as er:
             ic(er.sqlite_errorcode)
             ic(er.sqlite_errorname)
+            raise er
 
 
     def add_child(self,
@@ -113,7 +147,7 @@ class CoopDb:
             second_id: int | None, 
             grades_behind: int = 0) -> Any:
 
-        '''Python wrapper for queries/children.sql. Returns a sql error if one occurs'''
+        '''Python wrapper for queries/add_child.sql. Returns a sql error if one occurs'''
 
         query = read_queries("add_child")[0]
         try:
@@ -130,6 +164,7 @@ class CoopDb:
 
             ic(er.sqlite_errorcode)
             ic(er.sqlite_errorname)
+            raise er
 
 
 
