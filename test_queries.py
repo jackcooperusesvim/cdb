@@ -5,6 +5,9 @@ from random import randint
 from queries import *
 from geonamescache import GeonamesCache
 
+# TESTING VARIABLES
+NUM_FAMILIES = 10
+NUM_CHILDREN = 15
 
 def generate_random_family():
     mnName = names.get_first_name(gender = "female")
@@ -46,11 +49,17 @@ def generate_random_child(parent_indices: list[int]):
     return fName, birth_year,birth_month, birth_day, parent_indices[randint(0,len(parent_indices)-1)] , None, None, 0
 
 
+def generate_testing_db(location = ":memory:") -> CoopDb:
+    cdb = CoopDb(location)
+    cdb.create_tables()
+    parent_indices = []
+    for i in range(NUM_FAMILIES):
+        parent_indices.append(cdb.add_family(*generate_random_family()))
+    for i in range(NUM_CHILDREN):
+        cdb.add_child(*generate_random_child(parent_indices))
+    return cdb
 
-
-def test_CoopDb():
-    NUM_FAMILIES = 10
-    NUM_CHILDREN = 15
+if __name__ == "__main__":
     cdb = CoopDb(":memory:")
     cdb.create_tables()
     parent_indices = []
@@ -60,5 +69,3 @@ def test_CoopDb():
         cdb.add_child(*generate_random_child(parent_indices))
     ic(cdb.read_table("children"))
     ic(cdb.read_table("families"))
-if __name__ == "__main__":
-    test_CoopDb()

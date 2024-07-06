@@ -1,10 +1,12 @@
 import sqlite3
+import html_generators as htmlg
 import re
-from typing import Any
+from typing import Any, Callable
 from icecream import ic
 import config
 import pandas as pd
 import datetime
+from enum import Enum
 
 from gradedates import GRADE_DICT
 
@@ -17,7 +19,7 @@ def exec_query_pandas(connection: sqlite3.Connection,query:str) -> list[pd.DataF
     return results
 
 def rc(Str:str,char:str) -> str:
-    return "".join(Str.split(char))
+    return " ".join(Str.split(char))
 
 def read_queries(query: str) -> list[str]:
     '''Reads all queries from the .sql file at "config.QUERY_DIR()/{query}.sql"'''
@@ -29,9 +31,56 @@ def read_queries(query: str) -> list[str]:
                 queries.append(query)
     return queries
 
-class CoopDb:
+class db_field():
+    def __init__(self,id: str,t: type, validation: Callable[any,bool] = None):
+        self.id = id
+        self.type = t
+    def __str__(self) -> str:
+        return self.id
+class children():
+    fields = ["first_name","birth_year","birth_month","birth_day","family_id","first_id","grade_offset"]
+    first_name = db_field(id = "first_name", t = str)
+    birth_year = db_field(id = "birth_year", t = int)
+    birth_month = db_field(id = "birth_month", t = int)
+    birth_day = db_field(id = "birth_day", t = int)
+    family_id = db_field(id = "family_id", t = int)
+    first_id = db_field(id = "first_id", t = int)
+    grade_offset = db_field(id = "grade_offset", t = int)
 
-    def __init__(self, filepath = config.DATABASE_FILEPATH()):
+class families():
+    parent_mn = db_field(id = "parent_mn", t = str)
+    parent_sec = db_field(id = "parent_sec", t = str)
+    last_name = db_field(id = "last_name", t = str)
+    street = db_field(id = "street", t = str)
+    city = db_field(id = "city", t = str)
+    state = db_field(id = "state", t = str)
+    zip = db_field(id = "zip", t = int)
+    phone1 = db_field(id = "phone1", t = int)
+    phone2 = db_field(id = "phone2", t = int)
+    phone3 = db_field(id = "phone3", t = int )
+    email = db_field(id = "email", t = str)
+    is_member = db_field(id = "is_member", t = Any)
+    note = db_field(id = "note", t = Any)
+
+class classes():
+    name = db_field(id = "name",t = int)
+    desc = "desc"
+    hour = "hour"
+    member_cost = "member_cost"
+    regular_cost = "regular_cost"
+
+
+class changes():
+
+    def __init__(self, proposed: dict[str,]):
+        pass
+
+    def generate_query(self):
+        pass
+
+
+class CoopDb:
+    def __init__(self, filepath = config.DATABASE_FILEPATH()+""+config.DEF_DATABASE()):
         self.filepath = filepath
         self.con = sqlite3.connect(filepath)
 
@@ -50,9 +99,12 @@ class CoopDb:
     def read_table(self, table: str):
         return pd.read_sql_query("SELECT * FROM "+table+";",self.con)
 
+    def generate_table_html(self,table_name: str) -> str:
+        return htmlg.children_table(self.read_table(table_name))
+
+
     def read_grade(self,studentid: int):
 
-        assert type(studentid) == int
 
         cur = self.con.execute("SELECT birth_day, birth_month, birth_year, grade_offset FROM children WHERE id = ?", (studentid,))
 
@@ -65,19 +117,30 @@ class CoopDb:
 
         b_day = datetime.date(b_year,b_month,b_day)+datetime.timedelta(days = 365*offset)
 
-        grade_index = 0
         for name in config.GRADE_NAMES():
             if GRADE_DICT()[name] > b_day:
-                pass
-            #TODO: FINISH THIS FUNCTION
+                return name
 
 
 
         return out
 
 
+    def find_children(self, fam_id: int):
+        query = read_queries("find_children")[0]
+
+        try:
+            ic(query)
+            cur = self.con.execute(query, (fam_id,)) 
+            return cur.fetchall()[0]
+
+        except sqlite3.Error as er:
+            ic(er.sqlite_errorcode)
+            ic(er.sqlite_errorname)
 
 
+
+    # def update_child(self,id: int, changes: dict[str, Any])
     def add_class(self,
                   name: str,
                   desc: str | None,
@@ -89,7 +152,6 @@ class CoopDb:
         query = read_queries("add_class")[0]
 
         try:
-            ic(query)
             cur = self.con.execute(query,(name,desc,hour,member_cost,regular_cost)) 
             return cur.fetchall()[0][0]
         except sqlite3.Error as er:

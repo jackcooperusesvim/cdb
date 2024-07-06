@@ -21,7 +21,6 @@ def GRADE_LENGTH()-> list[int]:
 
 
 def GRADE_DICT() -> dict[str, datetime.date]:
-    #TODO: CHECK THIS FUNCTION
     out = dict()
     i = 0
 
@@ -29,18 +28,14 @@ def GRADE_DICT() -> dict[str, datetime.date]:
 
     total_offset = 0
     while i<len(config.GRADE_NAMES()):
-        out[config.GRADE_NAMES()[i]] = END_DATE(offset = total_offset+GRADE_LENGTH()[i])
+        relative_offset = GRADE_LENGTH()[i]
+        out[config.GRADE_NAMES()[i]] = END_DATE(offset = total_offset+relative_offset)
+        total_offset += relative_offset
         i+=1
 
     return out
 
-
-
-
-
-# TODO: FINISH THIS
-def get_student_grade(birth_year: int, 
-                      birth_month: int, 
-                      birth_day: int,
-                      offset: int):
-    pass
+def vars_to_str(day:int, month:int, year:int):
+    # check if the date is a valid one
+    datetime.date(day=day,month=month,year=year)
+    return month+"/"+day+"/"+year

@@ -33,7 +33,7 @@ CREATE TABLE classes(
 	id INTEGER PRIMARY KEY,
 	name TEXT UNIQUE NOT NULL,
 	desc TEXT,
-	HOUR INTEGER NOT NULL,
+	hour INTEGER NOT NULL,
 	member_cost INTEGER,
 	regular_cost INTEGER
 );

@@ -1,6 +1,8 @@
 import datetime
 def DATABASE_FILEPATH() -> str: 
-    return "CoopData.db"
+    return "data/"
+def DEF_DATABASE() -> str:
+    return "coopdb"
 def QUERY_DIR() -> str:
     return "queries"
 def START_MONTH() -> int:
