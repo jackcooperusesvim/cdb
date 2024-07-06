@@ -100,7 +100,7 @@ class CoopDb:
         return pd.read_sql_query("SELECT * FROM "+table+";",self.con)
 
     def generate_table_html(self,table_name: str) -> str:
-        return htmlg.children_table(self.read_table(table_name))
+        return htmlg.html_table(self.read_table(table_name))
 
 
     def read_grade(self,studentid: int):

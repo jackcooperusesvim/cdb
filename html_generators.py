@@ -17,9 +17,7 @@ def generate_header(data:pd.DataFrame) -> str:
 def edit_button(id: int):
     return "<td><button>"+str(id)+"</button></td>"
 
-def children_table(data: pd.DataFrame) -> str:
-
-    assert data.shape[1] == 9
+def html_table(data: pd.DataFrame) -> str:
 
     out = "<table>"+generate_header(data)
 

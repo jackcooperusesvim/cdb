@@ -44,7 +44,6 @@ def get_child_table():
 
 @app.route("/get_family_table")
 def get_family_table():
-    cdb = CoopDb()
     cdb = generate_testing_db()
     return cdb.generate_table_html("families")
 
