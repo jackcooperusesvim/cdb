@@ -15,7 +15,7 @@ def generate_header(data:pd.DataFrame) -> str:
     out +="</tr>"
     return out
 def edit_button(id: int):
-    return "<td><button>"+str(id)+"</button></td>"
+    return "<td><button hx-include='closest #record0' hx-post='/edit'>"+str(id)+"</button></td>"
 
 def html_table(data: pd.DataFrame) -> str:
 
@@ -24,7 +24,7 @@ def html_table(data: pd.DataFrame) -> str:
 
     id = 0
     for _, record in data.iterrows():
-        record_str = "<tr id = record"+str(id)+">"
+        record_str = "<tr asdf ='gobblygook' id = record"+str(id)+">"
         ic(record)
         ic(type(record))
         for field in record:

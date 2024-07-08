@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from queries import *
 from test_queries import generate_testing_db
 
@@ -16,7 +16,7 @@ def htmx():
         html = file.read()
     return html
 
-# EDIT MAIN PAGES
+# MAIN PAGES DB EDITOR
 @app.route("/child_edit")
 def child_edit():
     with open("web/child_edit.html","r") as file:
@@ -35,8 +35,14 @@ def class_edit():
         html = file.read()
     return html
 
-# TABLE LOADING
 
+# EDIT MAIN PAGES
+@app.route("/edit", methods = ['POST'])
+def edit_table():
+    ic(request.data)
+    return "<tr>THIS WORKED</tr>"
+
+# TABLE LOADING
 @app.route("/get_child_table")
 def get_child_table():
     cdb = generate_testing_db()
