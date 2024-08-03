@@ -1,4 +1,5 @@
 import datetime
+from icecream import ic
 import config
 
 
@@ -17,10 +18,8 @@ def YEAR_OF_COOP() -> int:
 def GRADE_LENGTH()-> list[int]:
     return [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
-
-
-
-def GRADE_DICT() -> dict[str, datetime.date]:
+def GRADE_DICT() -> dict[str, tuple[datetime.date,datetime.date]]:
+    '''Gives the starting and ending birthday for every grade in the co-op'''
     out = dict()
     i = 0
 
@@ -29,13 +28,19 @@ def GRADE_DICT() -> dict[str, datetime.date]:
     total_offset = 0
     while i<len(config.GRADE_NAMES()):
         relative_offset = GRADE_LENGTH()[i]
-        out[config.GRADE_NAMES()[i]] = END_DATE(offset = total_offset+relative_offset)
+        start_date = END_DATE(offset = total_offset+relative_offset)
+
+        end_date = start_date + datetime.timedelta(days = 365*relative_offset)
+
+        start_date += datetime.timedelta(days=1)
+
+        out[config.GRADE_NAMES()[i]] = (start_date, end_date)
+
         total_offset += relative_offset
         i+=1
 
     return out
 
-def vars_to_str(day:int, month:int, year:int):
-    # check if the date is a valid one
-    datetime.date(day=day,month=month,year=year)
-    return month+"/"+day+"/"+year
+class G():
+    DICT = GRADE_DICT()
+

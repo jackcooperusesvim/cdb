@@ -24,11 +24,16 @@
 </head>
 
 <body>
+
+
 	<section id=heading>
 		<h1>Database Editor</h1>
+		<h2><a href="/family_edit">Edit Family Table</a></h2>
+		<h2><a href="/class_edit">Edit Class Table</a></h2>
 		<h2>Children</h2>
 	</section>
 	<section id=links></section>
+	<div id="forms"></div>
 	<section id=data>
 		<div hx-swap="outerHTML" hx-get="/get_child_table" hx-trigger="load" />
 	</section>

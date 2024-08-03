@@ -1,6 +1,6 @@
 from flask import Flask, request
 from queries import *
-from test_queries import generate_testing_db
+import html_generators as htmlg
 
 app = Flask(__name__)
 
@@ -32,24 +32,39 @@ def family_edit():
 @app.route("/class_edit")
 def class_edit():
     with open("web/class_edit.html","r") as file:
-        html = file.read()
-    return html
-
+        return file.read()
 
 # EDIT MAIN PAGES
-@app.route("/edit", methods = ['POST'])
-def edit_table():
-    ic(request.data)
-    return "<tr>THIS WORKED</tr>"
+@app.route("/edit_child")
+def edit():
+    db = CoopDb("test.db")
+    id = int(request.headers["id"])
+
+    out = htmlg.blank_row(db.disp_child(id))
+    return out
+
+@app.route("/form_edit_child")
+def form_edit():
+    id = int(request.headers["id"])
+    return htmlg.child_edit_form(id)
+
+@app.route("/editpost", methods = ['POST'])
+def edit_post():
+
+    ic(request.headers["id"])
+    ic(request.headers)
+
+    return htmlg.child_edit_form(int(request.headers["id"]))
 
 # TABLE LOADING
 @app.route("/get_child_table")
 def get_child_table():
-    cdb = generate_testing_db()
-    return cdb.generate_table_html("children")
+    cdb = CoopDb("test.db")
+    ic(cdb.read_table("children"))
+    return htmlg.html_table(cdb.disp_children())
 
 @app.route("/get_family_table")
 def get_family_table():
-    cdb = generate_testing_db()
-    return cdb.generate_table_html("families")
+    cdb = CoopDb("test.db")
+    return htmlg.html_table(cdb.read_table("families"))
 

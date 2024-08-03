@@ -17,9 +17,7 @@ CREATE TABLE families(
 CREATE TABLE children(
 	id INTEGER PRIMARY KEY,
 	first_name TEXT NOT NULL,
-	birth_year INTEGER NOT NULL,
-	birth_month INTEGER NOT NULL,
-	birth_day INTEGER NOT NULL,
+	birthday TEXT NOT NULL,
 	family_id INTEGER NOT NULL,
 	first_id INTEGER,
 	second_id INTEGER,

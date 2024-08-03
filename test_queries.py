@@ -4,10 +4,14 @@ import names
 from random import randint
 from queries import *
 from geonamescache import GeonamesCache
+import datetime
 
 # TESTING VARIABLES
 NUM_FAMILIES = 10
 NUM_CHILDREN = 15
+
+PERM_NUM_FAMILIES = 200
+PERM_NUM_CHILDREN = 300
 
 def generate_random_family():
     mnName = names.get_first_name(gender = "female")
@@ -43,10 +47,8 @@ def generate_random_family():
 
 def generate_random_child(parent_indices: list[int]):
     fName = names.get_first_name()
-    birth_year = randint(2006,2023)
-    birth_month = randint(1,12)
-    birth_day = randint(1,29)
-    return fName, birth_year,birth_month, birth_day, parent_indices[randint(0,len(parent_indices)-1)] , None, None, 0
+    birthday = datetime.date(year = randint(2006,2023),month = randint(1,12), day = randint(1,28))
+    return fName, birthday, parent_indices[randint(0,len(parent_indices)-1)] , None, None, 0
 
 
 def generate_testing_db(location = ":memory:") -> CoopDb:
@@ -59,13 +61,19 @@ def generate_testing_db(location = ":memory:") -> CoopDb:
         cdb.add_child(*generate_random_child(parent_indices))
     return cdb
 
-if __name__ == "__main__":
-    cdb = CoopDb(":memory:")
+def generate_perm_testing_db(location = "test.db"):
+    cdb = CoopDb(location)
     cdb.create_tables()
     parent_indices = []
-    for i in range(NUM_FAMILIES):
+    for i in range(PERM_NUM_FAMILIES):
         parent_indices.append(cdb.add_family(*generate_random_family()))
-    for i in range(NUM_CHILDREN):
+    for i in range(PERM_NUM_CHILDREN):
         cdb.add_child(*generate_random_child(parent_indices))
-    ic(cdb.read_table("children"))
-    ic(cdb.read_table("families"))
+    cdb.commit()
+    return cdb
+
+
+if __name__ == "__main__":
+    tdb = generate_testing_db()
+    ic(tdb.read_table("children"))
+    ic(tdb.read_table("families"))
