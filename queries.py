@@ -63,6 +63,7 @@ class CoopDb:
     def disp_children(self):
         data = self.read_table("children")
         data["grade"] = data.apply(read_grade, axis = 1)
+        del data["grade_offset"]
         return data
 
     def disp_child(self, id: int):

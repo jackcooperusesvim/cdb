@@ -29,7 +29,7 @@ CREATE TABLE children(
 
 CREATE TABLE classes(
 	id INTEGER PRIMARY KEY,
-	name TEXT UNIQUE NOT NULL,
+	class_name TEXT UNIQUE NOT NULL,
 	desc TEXT,
 	hour INTEGER NOT NULL,
 	member_cost INTEGER,

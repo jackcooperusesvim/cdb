@@ -9,6 +9,9 @@ def index():
     with open("web/index.html","r") as file:
         html = file.read()
     return html
+@app.route("/blank_endpoint")
+def nada():
+    return ""
 
 @app.route("/htmx")
 def htmx():
@@ -62,6 +65,14 @@ def get_child_table():
     cdb = CoopDb("test.db")
     ic(cdb.read_table("children"))
     return htmlg.html_table(cdb.disp_children())
+
+@app.route("/submit_child", methods = ["POST"])
+def submit_child():
+    ic(request.form)
+    ic(request.headers["id"])
+
+    return ''
+
 
 @app.route("/get_family_table")
 def get_family_table():
