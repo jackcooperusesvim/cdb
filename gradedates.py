@@ -1,4 +1,5 @@
 import datetime
+from icecream import ic
 import config
 
 
@@ -15,12 +16,10 @@ def YEAR_OF_COOP() -> int:
         return today.year+1
 
 def GRADE_LENGTH()-> list[int]:
-    return [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    return [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
-
-
-
-def GRADE_DICT() -> dict[str, datetime.date]:
+def GRADE_DICT() -> dict[str, tuple[datetime.date]]:
+    '''Gives the ending birthday for every grade in the co-op'''
     out = dict()
     i = 0
 
@@ -28,14 +27,18 @@ def GRADE_DICT() -> dict[str, datetime.date]:
 
     total_offset = 0
     while i<len(config.GRADE_NAMES()):
-        relative_offset = GRADE_LENGTH()[i]
-        out[config.GRADE_NAMES()[i]] = END_DATE(offset = total_offset+relative_offset)
-        total_offset += relative_offset
+        end_date = END_DATE(offset= total_offset)
+        start_date = END_DATE(offset= total_offset+GRADE_LENGTH()[i])+datetime.timedelta(days=1)
+
+        out[config.GRADE_NAMES()[i]] = (start_date,end_date)
+
+        total_offset+=GRADE_LENGTH()[i]
         i+=1
 
+    ic(out["Grad"])
+    out["Grad"] =(datetime.date(year=1,month=1,day=1),out["Grad"][1])
     return out
 
-def vars_to_str(day:int, month:int, year:int):
-    # check if the date is a valid one
-    datetime.date(day=day,month=month,year=year)
-    return month+"/"+day+"/"+year
+class G():
+    DICT = GRADE_DICT()
+

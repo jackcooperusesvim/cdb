@@ -1,6 +1,6 @@
 from flask import Flask, request
 from queries import *
-from test_queries import generate_testing_db
+import html_generators as htmlg
 
 app = Flask(__name__)
 
@@ -9,6 +9,9 @@ def index():
     with open("web/index.html","r") as file:
         html = file.read()
     return html
+@app.route("/blank")
+def nada():
+    return ''
 
 @app.route("/htmx")
 def htmx():
@@ -16,40 +19,92 @@ def htmx():
         html = file.read()
     return html
 
-# MAIN PAGES DB EDITOR
-@app.route("/child_edit")
-def child_edit():
-    with open("web/child_edit.html","r") as file:
-        html = file.read()
-    return html
+# SEND THE TABLES
+@app.route("/table")
+def table():
+    connection = new_conn()
+    try:
+        table = request.headers["table"]
+    except Exception as e:
+        return index()
 
-@app.route("/family_edit")
-def family_edit():
-    with open("web/family_edit.html","r") as file:
-        html = file.read()
-    return html
+    out = db_action(connection,"get_data", table)
+    if type(out) == pd.DataFrame:
+        return htmlg.form_space()+htmlg.html_table(out,table)
+    raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
 
-@app.route("/class_edit")
-def class_edit():
-    with open("web/class_edit.html","r") as file:
-        html = file.read()
-    return html
+# SEND THE FORM LOADERS
+@app.route("/form_loader")
+def form_loader():
+    connection = new_conn()
+    try:
+        ic(request.headers)
+        id = int(request.headers["id"])
+        ic(request.headers["id"])
+        table = request.headers["table"]
+        ic(request.headers["table"])
+    except Exception as e:
+        ic(e)
+        return '<h1>ERROR</h1>'
+
+    out = list(db_action(connection,"get_data",table, where_id=id)[0])
+    ic(out)
+    out_dict = dict()
+    out_dict['id'] = out[0]
+    for i in range(1,len(out)):
+        out_dict[config.AVAILABLE_ARGS("edit",table)[i-1]] = out[i]
+
+    if type(out) == pd.DataFrame:
+        raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
+
+    return htmlg.blank_row(out_dict,table)
+
+# SEND THE FORMS 
+@app.route("/form")
+def form():
+    return '<h1>kachow</h1>'
+
+# RECIEVE THE FORMS 
+@app.route("/submit", methods = ['POST'])
+def submit():
+    return ''
 
 
-# EDIT MAIN PAGES
-@app.route("/edit", methods = ['POST'])
-def edit_table():
-    ic(request.data)
-    return "<tr>THIS WORKED</tr>"
+
+
+
+
+
+
+
+
+
+
+
+def edit_post():
+
+    ic(request.headers["id"])
+    ic(request.headers)
+
+    return htmlg.child_edit_form(int(request.headers["id"]))
 
 # TABLE LOADING
 @app.route("/get_child_table")
 def get_child_table():
-    cdb = generate_testing_db()
-    return cdb.generate_table_html("children")
+    cdb = CoopDb("test.db")
+    ic(cdb.read_table("children"))
+    return htmlg.html_table(cdb.disp_children())
+
+@app.route("/submit_child", methods = ["POST"])
+def submit_child():
+    ic(request.form)
+    ic(request.headers["id"])
+
+    return ''
+
 
 @app.route("/get_family_table")
 def get_family_table():
-    cdb = generate_testing_db()
-    return cdb.generate_table_html("families")
+    cdb = CoopDb("test.db")
+    return htmlg.html_table(cdb.read_table("families"))
 

@@ -25,9 +25,10 @@
 
 <body>
 	<h1>Database Menu</h1>
-	<h2><a href="/child_edit">Edit Children Table</a></h2>
-	<h2><a href="/family_edit">Edit Family Table</a></h2>
-	<h2><a href="/class_edit">Edit Class Table</a></h2>
+	<h2><a hx-headers='{"table": "families"}' hx-boost="true" href="/table">Edit Family Table</a></h2>
+	<h2><a hx-headers='{"table": "children"}' hx-boost="true" href="/table">Edit Children Table</a></h2>
+	<h2><a hx-headers='{"table": "first_hour"}' hx-boost="true" href="/table">Edit 1st Hour Class Table</a></h2>
+	<h2><a hx-headers='{"table": "second_hour"}' hx-boost="true" href="/table">Edit 2nd Hour Class Table</a></h2>
 
 </body>
 
