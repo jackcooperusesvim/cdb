@@ -10,8 +10,6 @@ import time
 
 import datetime
 
-from gradedates import G
-
 def new_conn():
     return sqlite3.connect(config.DATABASE_FILEPATH())
 

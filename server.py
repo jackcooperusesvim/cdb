@@ -52,7 +52,7 @@ def form_loader():
     out_dict = dict()
     out_dict['id'] = out[0]
     for i in range(1,len(out)):
-        out_dict[config.AVAILABLE_ARGS("edit",table)[i-1]] = out[i]
+        out_dict[config.AVAILABLE_ARGS("get_data",table)[i-1]] = out[i]
 
     if type(out) == pd.DataFrame:
         raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
@@ -62,7 +62,19 @@ def form_loader():
 # SEND THE FORMS 
 @app.route("/form")
 def form():
-    return '<h1>kachow</h1>'
+    try:
+        ic(request.headers)
+        id = int(request.headers["id"])
+        ic(request.headers["id"])
+        table = request.headers["table"]
+        ic(request.headers["table"])
+    except Exception as e:
+        ic(e)
+        return '<h1>ERROR</h1>'
+
+    out = htmlg.child_edit_form(id)
+
+    return out
 
 # RECIEVE THE FORMS 
 @app.route("/submit", methods = ['POST'])

@@ -1,6 +1,6 @@
 import pandas as pd
 from icecream import ic
-from queries import CoopDb, new_conn
+from queries import CoopDb, new_conn, db_action
 import config
 
 def generate_header(data:pd.DataFrame) -> str:
@@ -28,11 +28,8 @@ def class_to_option(data: pd.DataFrame):
     else:
         return f'''<option value="{data.id}-{data.class_name}">{data.id}-{data.class_name}</option>'''
 
-def grade_to_options():
-    out = ""
-    for name in config.GRADE_NAMES():
-        out += f'''<option value="{name}">{name}</option>'''
-    return out
+def grade_to_option(name: str):
+    return f'''<option value="{name}">{name}</option>'''
 
 def generate_table(data: pd.DataFrame):
     pass
@@ -40,22 +37,25 @@ def generate_table(data: pd.DataFrame):
 def child_edit_form(id: int):
     connection = new_conn()
 
-    classnames = db.read_table("classes")
+    grades = list(config.ARGS_DICT())
+    first_name,last_name,fam_last,first_name,second_name,birthday,grade_offset = db_action(connection, op = "get_data",table = "children",where_id=id)
 
-    grade_names = config.GRADE_NAMES()
-    grade_names["current_option"] = grade_names["grade"] == int(data["grade"].iloc[0])
-    grade_options = "\n".join(list(grade_names.apply(grade_to_option,axis=1)))
+    ic(child)
+    families = connection.execute('SELECT CONCAT(id,\'|\', last_name) FROM families').fetchall()
+    ic(families)
+    first_hour = connection.execute('SELECT CONCAT(id,\'|\', class_name) FROM first_hour ORDER BY id;').fetchall()
+    second_hour = connection.execute('SELECT CONCAT(id,\'|\', class_name) FROM second_hour ORDER BY id;').fetchall()
+    ic(first_hour)
+    ic(second_hour)
+    grades[len(grades)-1]= "Auto Calc"
 
-    ic(data['first_id'].iloc[0])
-    ic(classnames["id"])
-
-    ic(classnames.current_option.unique())
+    grade_options = "\n".join([grade_to_option(item) for item in grades])
 
     return f'''<form class="form{id}">
     <input type="number" id="id" value="{id}" disabled hidden><br>
 
     <label for="first_name">First Name:</label><br>
-    <input type="text" id="first_name" value="{str(data.first_name.iloc[0])}"><br>
+    <input type="text" id="first_name" value="{["first_name"]}"><br>
 
     <label for="birthday">Birthday:</label><br>
     <input type="date" id="birthday" name="birthday" value="{data.birthday.iloc[0]}"><br>

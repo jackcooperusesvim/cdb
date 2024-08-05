@@ -18,7 +18,7 @@ def YEAR_OF_COOP() -> int:
 def GRADE_LENGTH()-> list[int]:
     return [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
-def GRADE_DICT() -> dict[str, tuple[datetime.date]]:
+def GRADE_DICT() -> dict[str, tuple[datetime.date,datetime.date]]:
     '''Gives the ending birthday for every grade in the co-op'''
     out = dict()
     i = 0
@@ -39,6 +39,15 @@ def GRADE_DICT() -> dict[str, tuple[datetime.date]]:
     out["Grad"] =(datetime.date(year=1,month=1,day=1),out["Grad"][1])
     return out
 
-class G():
-    DICT = GRADE_DICT()
+def to_grade(birthday:datetime.date, offset:int) -> str:
+    grades = GRADE_DICT()
+
+    for grade in grades:
+        if grades[grade][0]<birthday and grades[grade][1]>=birthday:
+            return grade
+def from_grade(birthday: datetime.date, grade:str) -> int:
+    grades = list(GRADE_DICT())
+    normal_grade = to_grade(birthday,0)
+    return grades.index(normal_grade)-grades.index(grade)
+
 
