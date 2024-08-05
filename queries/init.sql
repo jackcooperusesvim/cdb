@@ -22,16 +22,22 @@ CREATE TABLE children(
 	first_id INTEGER,
 	second_id INTEGER,
 	grade_offset INTEGER,
-	FOREIGN KEY(first_id) REFERENCES classes(id),
-	FOREIGN KEY(second_id) REFERENCES classes(id),
-	FOREIGN KEY(family_id) REFERENCES family(id)
+	FOREIGN KEY(first_id) REFERENCES first_hour(id),
+	FOREIGN KEY(second_id) REFERENCES second_hour(id),
+	FOREIGN KEY(family_id) REFERENCES families(id)
 );
 
-CREATE TABLE classes(
+CREATE TABLE first_hour(
 	id INTEGER PRIMARY KEY,
 	class_name TEXT UNIQUE NOT NULL,
 	desc TEXT,
-	hour INTEGER NOT NULL,
+	member_cost INTEGER,
+	regular_cost INTEGER
+);
+CREATE TABLE second_hour(
+	id INTEGER PRIMARY KEY,
+	class_name TEXT UNIQUE NOT NULL,
+	desc TEXT,
 	member_cost INTEGER,
 	regular_cost INTEGER
 );

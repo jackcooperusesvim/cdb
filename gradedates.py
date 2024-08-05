@@ -16,10 +16,10 @@ def YEAR_OF_COOP() -> int:
         return today.year+1
 
 def GRADE_LENGTH()-> list[int]:
-    return [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    return [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
-def GRADE_DICT() -> dict[str, tuple[datetime.date,datetime.date]]:
-    '''Gives the starting and ending birthday for every grade in the co-op'''
+def GRADE_DICT() -> dict[str, tuple[datetime.date]]:
+    '''Gives the ending birthday for every grade in the co-op'''
     out = dict()
     i = 0
 
@@ -27,18 +27,16 @@ def GRADE_DICT() -> dict[str, tuple[datetime.date,datetime.date]]:
 
     total_offset = 0
     while i<len(config.GRADE_NAMES()):
-        relative_offset = GRADE_LENGTH()[i]
-        start_date = END_DATE(offset = total_offset+relative_offset)
+        end_date = END_DATE(offset= total_offset)
+        start_date = END_DATE(offset= total_offset+GRADE_LENGTH()[i])+datetime.timedelta(days=1)
 
-        end_date = start_date + datetime.timedelta(days = 365*relative_offset)
+        out[config.GRADE_NAMES()[i]] = (start_date,end_date)
 
-        start_date += datetime.timedelta(days=1)
-
-        out[config.GRADE_NAMES()[i]] = (start_date, end_date)
-
-        total_offset += relative_offset
+        total_offset+=GRADE_LENGTH()[i]
         i+=1
 
+    ic(out["Grad"])
+    out["Grad"] =(datetime.date(year=1,month=1,day=1),out["Grad"][1])
     return out
 
 class G():

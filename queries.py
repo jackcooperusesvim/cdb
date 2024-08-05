@@ -11,28 +11,50 @@ import time
 import datetime
 
 from gradedates import G
-def exec_query_pandas(connection: sqlite3.Connection,query:str) -> list[pd.DataFrame]:
-    results = []
-    with open(config.QUERY_DIR()+"/"+query+".sql") as file:
-        for query in file.read().split(";"):
-            results.append(pd.read_sql_query(query,connection))
-    return results
 
-def rc(Str:str,char:str) -> str:
-    return " ".join(Str.split(char))
+def new_conn():
+    return sqlite3.connect(config.DATABASE_FILEPATH())
 
-def read_queries(query: str) -> list[str]:
-    '''Reads all queries from the .sql file at "config.QUERY_DIR()/{query}.sql"'''
-    queries = []
-    with open(config.QUERY_DIR()+"/"+query+".sql") as file:
-        for query in file.read().split(";"):
-            query = rc(rc(query,'\t'),'\n')
-            if query != '':
-                queries.append(query)
-    return queries
+def get_query(op: str, table: str) -> str:
+    config.CERTIFY_OP_AND_TABLE(op,table)
+    filepath = f"queries/{op}/{table}.sql"
+    return read_query(filepath)
+
+def init_db():
+    connection = new_conn()
+    file = read_query("queries/init.sql")
+    queries = file.split(";")
+    for query in queries:
+        exec_query(connection,query)
+
+    connection.commit()
+
+def exec_query(connection : sqlite3.Connection,
+               query : str,
+               params : list[str] | None = None, return_pd = False) -> sqlite3.Cursor | pd.DataFrame:
+    if return_pd:
+        return pd.read_sql_query(query,connection, params = params)
+    try:
+        if params is None:
+            cur = connection.execute(query)
+        else:
+            cur = connection.execute(query,tuple(params))
+    except sqlite3.IntegrityError as e:
+        raise e
+    except Exception as e:
+        ic(query)
+        if not params is None:
+            ic(params)
+        raise e
+
+
+    return cur
+
+def read_query(filepath: str) -> str:
+    with open(filepath,'r') as file:
+        return file.read()
 
 def read_grade(data):
-
     b_day = datetime.datetime.strptime(data["birthday"],"%Y-%m-%d").date()+datetime.timedelta(days = 365*data["grade_offset"])
 
     for name in G.DICT:
@@ -40,14 +62,162 @@ def read_grade(data):
             return name
     return "Grad"
 
-class CoopDb:
-    def __init__(self, filepath = config.DATABASE_FILEPATH()+""+config.DEF_DATABASE()):
-        self.filepath = filepath
-        self.con = sqlite3.connect(filepath)
+def db_action(connection: sqlite3.Connection,
+              op: str, 
+              table: str, 
+              where_id: int | None = None,
+              input_options: dict[str,str] | None = None) -> pd.DataFrame | Any:
 
-    def list_tables(self):
-        cur = self.con.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%';")
-        cur.fetchall()
+    MAX_STRIKES = 3
+    #TODO: COVER EDGE CASES HERE
+    return_pd = False
+    if op == "get_data":
+        return_pd = True
+
+
+
+    query = get_query(op,table)
+    slots = config.AVAILABLE_ARGS(op,table)
+    params = []
+
+    if where_id != None:
+        return_pd = False
+        query = query[:len(query)-2]
+        query += f" WHERE {table}.id = {int(where_id)};"
+        ic(query)
+
+    if input_options != None:
+        strikes = 0
+        for slot in slots:
+            if slot in input_options:
+                params.append(input_options[slot])
+            else:
+                strikes += 1
+                if strikes >= MAX_STRIKES:
+                    raise Exception(f'you filled {strikes} wrong entries. You\'re out')
+                params.append("null")
+        out = exec_query(connection,query, params, return_pd = return_pd)
+    else:
+        out = exec_query(connection,query,return_pd = return_pd)
+
+    if type(out) == sqlite3.Cursor:
+        out = out.fetchall()
+    if op in ["edit","add"]:
+        rep_commit(connection)
+    if op == "add":
+        out = out[0][0]
+
+    return out
+
+
+def rep_commit(connection: sqlite3.Connection):
+    try:
+        connection.commit()
+    except sqlite3.OperationalError as e:
+        ic(e)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class CoopDb:
+    def __init__(self, filepath = None):
+        if filepath == None:
+            self.filepath = config.DATABASE_FILEPATH()
+        else:
+            self.filepath = filepath
+
+        self.con = sqlite3.connect(self.filepath)
+
 
     def create_tables(self):
         queries = read_queries("init")
@@ -70,18 +240,6 @@ class CoopDb:
         data = self.disp_children()
         data = data[data["id"]==id]
         return data
-
-    def find_children(self, fam_id: int):
-        query = read_queries("find_children")[0]
-
-        try:
-            cur = self.con.execute(query, (fam_id,)) 
-            return cur.fetchall()[0]
-
-        except sqlite3.Error as er:
-            ic(er.sqlite_errorcode)
-            ic(er.sqlite_errorname)
-
 
 
     # def update_child(self,id: int, changes: dict[str, Any])
