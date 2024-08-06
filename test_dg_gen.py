@@ -61,7 +61,7 @@ def generate_random_child(connection: sqlite3.Connection,
     out["family_id"] = parent_indices[randint(0,len(parent_indices)-1)]
     out["first_id"] = first_hour_indices[randint(0,len(first_hour_indices)-1)]
     out["second_id"] = second_hour_indices[randint(0,len(second_hour_indices)-1)]
-    out["grade_offset"] = 0
+    out["grade_offset"] = randint(-1,1)
     for key in out:
         out[key] = str(out[key])
 

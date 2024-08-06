@@ -42,12 +42,24 @@ def GRADE_DICT() -> dict[str, tuple[datetime.date,datetime.date]]:
 def to_grade(birthday:datetime.date, offset:int) -> str:
     grades = GRADE_DICT()
 
+    ind = 0
     for grade in grades:
         if grades[grade][0]<birthday and grades[grade][1]>=birthday:
-            return grade
+            normal_grade_ind = ind
+        ind + 1
+
+    grades = list(grades)
+    if normal_grade_ind+offset>=len(grades):
+        return grades[len(grades)-1]
+    if normal_grade_ind+offset<=0:
+        return grades[0]
+    return grades[normal_grade_ind+offset]
+
 def from_grade(birthday: datetime.date, grade:str) -> int:
     grades = list(GRADE_DICT())
     normal_grade = to_grade(birthday,0)
     return grades.index(normal_grade)-grades.index(grade)
 
-
+def str_to_dt(date_string: str) -> datetime.date:
+    date = datetime.datetime.strptime(date_string,"%Y-%m-%d")
+    return date.date()

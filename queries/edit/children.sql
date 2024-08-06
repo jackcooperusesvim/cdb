@@ -6,4 +6,3 @@ UPDATE children SET
 	second_id = ?,
 	grade_offset = ?
 
-WHERE id = ?

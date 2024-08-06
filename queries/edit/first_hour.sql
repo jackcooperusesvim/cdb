@@ -3,4 +3,4 @@ UPDATE first_hour_classes SET
 	desc = ?,
 	member_cost = ?,
 	regular_cost = ?
-WHERE id = ?
+

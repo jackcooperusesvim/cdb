@@ -41,6 +41,7 @@ def exec_query(connection : sqlite3.Connection,
         raise e
     except Exception as e:
         ic(query)
+        ic(type(query))
         if not params is None:
             ic(params)
         raise e
@@ -51,14 +52,6 @@ def exec_query(connection : sqlite3.Connection,
 def read_query(filepath: str) -> str:
     with open(filepath,'r') as file:
         return file.read()
-
-def read_grade(data):
-    b_day = datetime.datetime.strptime(data["birthday"],"%Y-%m-%d").date()+datetime.timedelta(days = 365*data["grade_offset"])
-
-    for name in G.DICT:
-        if G.DICT[name][0] < b_day and G.DICT[name][1] > b_day:
-            return name
-    return "Grad"
 
 def db_action(connection: sqlite3.Connection,
               op: str, 

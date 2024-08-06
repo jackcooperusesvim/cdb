@@ -13,4 +13,3 @@ UPDATE families SET
 	is_member = ?,
 	note = ?
 
-WHERE id = ?

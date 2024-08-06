@@ -1,9 +1,8 @@
 SELECT children.id as id, 
 	first_name, 
-	last_name, 
-	CONCAT(family_id,'|',last_name),
-	CONCAT(first_id,'|',first_hour.class_name),
-	CONCAT(second_id,'|',second_hour.class_name),
+	CONCAT(last_name,'|',family_id) AS family,
+	CONCAT(first_hour.class_name,'|',first_id) AS first_hour,
+	CONCAT(second_hour.class_name,'|',second_id) AS second_hour,
 	birthday, 
 	grade_offset
 

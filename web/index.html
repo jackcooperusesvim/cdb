@@ -21,14 +21,34 @@
 	<!-- Main Stylesheet-->
 	<link rel="stylesheet" href="/styles.css">
 	<script src="/htmx"></script>
+	<script>
+		function top_scroll() {
+			window.scrollTo(0, 0)
+		}
+	</script>
 </head>
 
 <body>
-	<h1>Database Menu</h1>
-	<h2><a hx-headers='{"table": "families"}' hx-boost="true" href="/table">Edit Family Table</a></h2>
-	<h2><a hx-headers='{"table": "children"}' hx-boost="true" href="/table">Edit Children Table</a></h2>
-	<h2><a hx-headers='{"table": "first_hour"}' hx-boost="true" href="/table">Edit 1st Hour Class Table</a></h2>
-	<h2><a hx-headers='{"table": "second_hour"}' hx-boost="true" href="/table">Edit 2nd Hour Class Table</a></h2>
+	<h1>Database</h1>
+	<a href="/">Home</a>
+	<div id=forms border=1></div>
+	<div class="table">
+		<h2><button hx-headers='{"table": "families"}' hx-target=".table" hx-swap="outerHTML"
+				hx-get="/table">Edit
+				Family
+				Table</button>
+		</h2>
+		<h2><button hx-headers='{"table": "children"}' hx-target=".table" hx-swap="outerHTML"
+				hx-get="/table">Edit
+				Children
+				Table</button></h2>
+		<h2><button hx-headers='{"table": "first_hour"}' hx-target=".table" hx-swap="outerHTML"
+				hx-get="/table">Edit 1st Hour Class
+				Table</button></h2>
+		<h2><button hx-headers='{"table": "second_hour"}' hx-target=".table" hx-swap="outerHTML"
+				hx-get="/table">Edit 2nd Hour Class
+				Table</button></h2>
+	</div>
 
 </body>
 
