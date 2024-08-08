@@ -1,6 +1,6 @@
 import pandas as pd
 from icecream import ic
-from queries import CoopDb, new_conn, db_action
+from queries import new_conn, db_action
 import queries
 import config
 import gradedates
@@ -13,6 +13,9 @@ def generate_header(data:pd.DataFrame) -> str:
 
     out +="</tr>"
     return out
+
+def error_message(message:str):
+    return f'<h4>{message}</h4><br>'
 
 def edit_button(id: int,table: str):
     return f'<td><button onclick="top_scroll()" hx-swap="outerHTML" hx-target="#record{str(id)}" {headers(id,table)}  hx-get="/form_loader">{str(id)}</button></td>'
@@ -29,8 +32,11 @@ def list_to_options(in_list: list[str], current_option: str):
             out += f'''<option value="{id}">{idstr}</option>\n'''
     return out
 
-def child_edit_form(id: int):
+def child_edit_form(id: int, err:str = ''):
     connection = new_conn()
+
+    if err != '':
+        err = error_message(err)
 
     q = queries.get_query("get_data","children")
     q = q[:len(q)-2]+f" WHERE children.id = {id};"
@@ -51,13 +57,17 @@ def child_edit_form(id: int):
     families = [family[0] for family in families]
     first_hour = [c[0] for c in first_hour] 
     second_hour = [c[0] for c in second_hour]
+    auto_calc_grades = [f"Keep Offset|{grade}",f"Remove Offset|{gradedates.to_grade(birthday,0)}"]
 
     families = list_to_options(families,family)
     first_hour = list_to_options(first_hour,class_one)
     second_hour = list_to_options(second_hour,class_two)
-    grades = list_to_options(grades,grade)
+
+    adj_grades = list_to_options(grades,"")
+    auto_calc_grades = list_to_options(auto_calc_grades,auto_calc_grades[0])
 
     return f'''<form id="form{id}">
+    {err}
     <input type="number" id="id" name="id" value="{id}" hidden><br>
 
     <label for="first_name">First Name:</label><br>
@@ -83,7 +93,12 @@ def child_edit_form(id: int):
 
     <label for="grade">Grade:</label><br>
     <select name="grade" id="grade" value={grade} name="grade">
-    {grades}
+    <optgroup label="Auto Calc">
+    {auto_calc_grades}
+    </optgroup>
+    <optgroup label="Offset Grade">
+    {adj_grades}
+    </optgroup>
     </select><br>
 
     <br>
@@ -105,7 +120,9 @@ def is_member_options(is_member: bool) -> str:
     ic(membopts)
     return membopts
 
-def family_edit_form(id: int):
+def family_edit_form(id: int, err:str = ''):
+    if err != '':
+        err = error_message(err)
     connection = new_conn()
     id, parent_mn, parent_sec, last_name, street, city, state, zip, phone1, phone2, phone3, email, is_member, note = db_action(connection, "get_data","families", where_id = id)[0]
     if is_member == "False":
@@ -114,6 +131,7 @@ def family_edit_form(id: int):
         is_member = True
 
     return f'''<form id="form{id}">
+    {err}
         <input type="number" name ="id" id="id" value="{id}" hidden><br>
 
         <label for="parent_mn">Main Parent:</label><br>
@@ -171,11 +189,15 @@ def family_edit_form(id: int):
 
 
 
-def class_edit_form(id: int, hour: str):
+def class_edit_form(id: int, hour: str, err:str = ''):
+    ic(hour)
     connection = new_conn()
-    _, class_name, desc, member_cost, regular_cost = db_action(connection, "get_data","first_hour", where_id = id)[0]
+    _, class_name, desc, member_cost, regular_cost = db_action(connection, "get_data",hour, where_id = id)[0]
+    if err != '':
+        err = error_message(err)
 
     return f'''<form id="form{id}">
+    {err}
         <input type="number" name="id" id="id" value="{id}" hidden><br>
 
         <label for="class_name">Class Name:</label><br>
@@ -188,14 +210,14 @@ def class_edit_form(id: int, hour: str):
         <input type="text" name="member_cost" id="member_cost" value="{member_cost}"><br>
 
         <label for="regular_cost">Regular Cost:</label><br>
-        <input type="number" name="" id="regular_cost" value="{regular_cost}"><br>
+        <input type="number" name="regular_cost" id="regular_cost" value="{regular_cost}"><br>
 
         <button id="cancel" hx-get="/blank_endpoint" hx-swap="delete" hx-target="#form{id}">Cancel</button><br>
 
-        <button id="reset" {headers(id,"families")} hx-get="/form" hx-swap="outerHTML" hx-target="#form{id}">Reset</button><br>
+        <button id="reset" {headers(id,hour)} hx-get="/form" hx-swap="outerHTML" hx-target="#form{id}">Reset</button><br>
         <br>
 
-        <button id="submit" {headers(id, "families")} hx-post="/submit" hx-swap="outerHTML" hx-target="#form{id}">Submit</button><br>
+        <button id="submit" {headers(id,hour)} hx-post="/submit" hx-swap="outerHTML" hx-target="#form{id}">Submit</button><br>
         <br>
         </form>'''
 
@@ -210,6 +232,11 @@ def headers(id: int | None, table: str):
 def blank_row(data,table):
 
     id = data["id"]
+    if table == "children":
+        bday = gradedates.str_to_dt(data["birthday"])
+        offset = int(data['grade_offset'])
+        data["grade"] = gradedates.to_grade(bday,offset)
+
     out = f'<tr id=record{id} {headers(id,table)} hx-swap="innerHTML" hx-trigger="load" hx-get="/form" hx-target="#forms">'
 
     for field in data:
@@ -220,7 +247,6 @@ def blank_row(data,table):
     return out
 
 def html_table_records(data: pd.DataFrame,table:str):
-    ic(data)
     out = ""
     for _, record in data.iterrows():
         id = record.id
@@ -234,6 +260,11 @@ def html_table_records(data: pd.DataFrame,table:str):
     return out
  
 def html_table(data: pd.DataFrame, table: str) -> str:
+    ic(data)
+    if table == "children":
+        data['grade'] = data.apply(gradedates.to_grade_pd,axis=1)
+        ic("CHILDREN")
+        ic(data)
 
     out = "<table border=1 class='table'>"+generate_header(data)
     out += html_table_records(data, table)

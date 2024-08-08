@@ -1,6 +1,5 @@
-UPDATE second_hour_classes SET 
+UPDATE second_hour SET 
 	class_name = ?,
 	desc = ?,
 	member_cost = ?,
-	regular_cost = ?
-WHERE id = ?
+	regular_cost = ?,

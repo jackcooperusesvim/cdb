@@ -117,4 +117,6 @@ if __name__ == "__main__":
     generate_testing_db()
     con = new_conn()
     ic(db_action(con,"get_data","first_hour"))
+    ic(db_action(con,"get_data","children"))
+    ic(db_action(con,"get_data","families"))
     ic(db_action(con,"get_data","second_hour"))

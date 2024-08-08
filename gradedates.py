@@ -1,6 +1,7 @@
 import datetime
 from icecream import ic
 import config
+import pandas as pd
 
 
 def END_DATE(offset: int = 0) -> datetime.date:
@@ -35,25 +36,32 @@ def GRADE_DICT() -> dict[str, tuple[datetime.date,datetime.date]]:
         total_offset+=GRADE_LENGTH()[i]
         i+=1
 
-    ic(out["Grad"])
     out["Grad"] =(datetime.date(year=1,month=1,day=1),out["Grad"][1])
     return out
 
 def to_grade(birthday:datetime.date, offset:int) -> str:
     grades = GRADE_DICT()
+    if type(birthday) is str:
+        birthday = str_to_dt(birthday)
 
     ind = 0
     for grade in grades:
-        if grades[grade][0]<birthday and grades[grade][1]>=birthday:
-            normal_grade_ind = ind
-        ind + 1
+
+        if grades[grade][0]<=birthday and grades[grade][1]>=birthday:
+            break
+        ind += 1
 
     grades = list(grades)
-    if normal_grade_ind+offset>=len(grades):
+    if ind+offset>=len(grades):
         return grades[len(grades)-1]
-    if normal_grade_ind+offset<=0:
+    if ind+offset<=0:
         return grades[0]
-    return grades[normal_grade_ind+offset]
+    return grades[ind+offset]
+
+def to_grade_pd(data) -> str:
+    ic(data)
+    return to_grade(data.birthday, data.grade_offset)
+
 
 def from_grade(birthday: datetime.date, grade:str) -> int:
     grades = list(GRADE_DICT())

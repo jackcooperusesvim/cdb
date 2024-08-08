@@ -1,4 +1,4 @@
-UPDATE first_hour_classes SET 
+UPDATE first_hour SET 
 	class_name = ?,
 	desc = ?,
 	member_cost = ?,
