@@ -44,27 +44,41 @@ def child_edit_form(id: int, err:str = ''):
 
     grades = list(config.GRADE_NAMES())
 
-    _, first_name,family,class_one, class_two, birthday, grade_offset = connection.execute(q).fetchall()[0]
 
-    grade = gradedates.to_grade(gradedates.str_to_dt(birthday),grade_offset)
 
     families = connection.execute('SELECT CONCAT(last_name, \'|\', id) AS family FROM families ORDER BY family').fetchall()
-
     first_hour = connection.execute('SELECT CONCAT(class_name,\'|\', id) AS class FROM first_hour ORDER BY class;').fetchall()
-
     second_hour = connection.execute('SELECT CONCAT(class_name,\'|\', id) AS class FROM second_hour ORDER BY class;').fetchall()
 
     families = [family[0] for family in families]
     first_hour = [c[0] for c in first_hour] 
     second_hour = [c[0] for c in second_hour]
-    auto_calc_grades = [f"Keep Offset|{grade}",f"Remove Offset|{gradedates.to_grade(birthday,0)}"]
+
+    adj_grades = list_to_options(grades,"")
+
+    if id == -1:
+        grade, first_name,family,class_one, class_two, birthday, grade_offset = '','','','','',str(datetime.datetime.today().date),0
+        grade_section = adj_grades
+    else:
+
+        _, first_name,family,class_one, class_two, birthday, grade_offset = connection.execute(q).fetchall()[0]
+
+
+        grade = gradedates.to_grade(gradedates.str_to_dt(birthday),grade_offset)
+        auto_calc_grades = [f"Keep Offset|{grade}",f"Remove Offset|{gradedates.to_grade(birthday,0)}"]
+        auto_calc_grades = list_to_options(auto_calc_grades,auto_calc_grades[0])
+
+        grade_section = f'''
+        <optgroup label="Auto Calc">
+        {auto_calc_grades}
+        </optgroup>
+        <optgroup label="Offset Grade">
+        {adj_grades}
+        </optgroup>'''
 
     families = list_to_options(families,family)
     first_hour = list_to_options(first_hour,class_one)
     second_hour = list_to_options(second_hour,class_two)
-
-    adj_grades = list_to_options(grades,"")
-    auto_calc_grades = list_to_options(auto_calc_grades,auto_calc_grades[0])
 
     return f'''<form id="form{id}">
     {err}
@@ -93,12 +107,7 @@ def child_edit_form(id: int, err:str = ''):
 
     <label for="grade">Grade:</label><br>
     <select name="grade" id="grade" value={grade} name="grade">
-    <optgroup label="Auto Calc">
-    {auto_calc_grades}
-    </optgroup>
-    <optgroup label="Offset Grade">
-    {adj_grades}
-    </optgroup>
+    {grade_section}
     </select><br>
 
     <br>
@@ -260,11 +269,8 @@ def html_table_records(data: pd.DataFrame,table:str):
     return out
  
 def html_table(data: pd.DataFrame, table: str) -> str:
-    ic(data)
     if table == "children":
         data['grade'] = data.apply(gradedates.to_grade_pd,axis=1)
-        ic("CHILDREN")
-        ic(data)
 
     out = "<table border=1 class='table'>"+generate_header(data)
     out += html_table_records(data, table)

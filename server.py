@@ -20,9 +20,29 @@ def htmx():
         html = file.read()
     return html
 
-# SEND THE TABLES
-@app.route("/table")
-def table():
+@app.route("/families_table")
+def families_table():
+    connection = new_conn()
+    out = db_action(connection,"get_data", 'families')
+    ic(out)
+    ic(out)
+    if type(out) == pd.DataFrame:
+        return htmlg.html_table(out,'families')
+    raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
+
+@app.route("/children_table")
+def child_table():
+    connection = new_conn()
+    out = db_action(connection,"get_data", 'children')
+    ic(out)
+    ic(out)
+    if type(out) == pd.DataFrame:
+        return htmlg.html_table(out,'children')
+    raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
+
+@app.route("/first_class_table")
+
+def first_class_table():
     connection = new_conn()
     try:
         table = request.headers["table"]
@@ -37,16 +57,30 @@ def table():
         return htmlg.html_table(out,table)
     raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
 
+@app.route("/second_class_table")
+def second_class_table():
+    connection = new_conn()
+    try:
+        table = request.headers["table"]
+    except Exception as e:
+        ic(request.headers)
+        raise e
+
+    out = db_action(connection,"get_data", table)
+    ic(out)
+    ic(out)
+    if type(out) == pd.DataFrame:
+        return htmlg.html_table(out,table)
+    raise Exception("db_action returned sqlite3.Cursor instead of pd.DataFrame")
+
+
 # SEND THE FORM LOADERS
 @app.route("/form_loader")
 def form_loader():
     connection = new_conn()
     try:
-        ic(request.headers)
         id = int(request.headers["id"])
-        ic(request.headers["id"])
         table = request.headers["table"]
-        ic(request.headers["table"])
     except Exception as e:
         ic(e)
         return '<h1>ERROR</h1>'
@@ -68,11 +102,8 @@ def form_loader():
 @app.route("/form")
 def form():
     try:
-        ic(request.headers)
         id = int(request.headers["id"])
-        ic(request.headers["id"])
         table = request.headers["table"]
-        ic(request.headers["table"])
     except Exception as e:
         ic(e)
         return '<h1>ERROR</h1>'
@@ -100,31 +131,33 @@ def submit():
         ic(e)
         return '<h1>FRONT_END_ERROR: RESTART PAGE</h1>'
     form_data = dict(form_data)
-    err = None
+    ic(form_data)
+    err = ''
 
     try:
         new_data = form_val.validate_form(table,form_data)
+        assert id != -1
+    except AssertionError:
+        #TODO: ADD FUNCTIONALITY FOR ADDING NEW RECORDS
+        pass
     except Exception as e:
         err = e
+    else:
+        ic(new_data)
+        db_action(connection,"edit",table,where_id= id, input_options=new_data)
+        ic(db_action(connection,"get_data",table,where_id=id))
+        connection.commit()
+        return ''
 
-    orig_data = db_action(connection,"get_data",table, where_id = id)
-    ic(orig_data[0][0])
-    ic(id)
-    if id != -1 and id == orig_data[0][0]:
-        if err is None:
-            db_action(connection,"edit",table,where_id= id, input_options=new_data)
-            connection.commit()
-        else:
-            if table == "children":
-                return htmlg.child_edit_form(id, err = str(err))
-            elif table == "families":
-                return htmlg.family_edit_form(id, err = str(err))
-            elif table in ['first_hour','second_hour']:
-                return htmlg.family_edit_form(id, err = str(err))
-            elif table in ['first_hour','second_hour']:
-                return htmlg.family_edit_form(id, err = str(err))
+    if table == "children":
+        return htmlg.child_edit_form(id, err = str(err))
+    elif table == "families":
+        return htmlg.family_edit_form(id, err = str(err))
+    elif table in ['first_hour','second_hour']:
+        return htmlg.family_edit_form(id, err = str(err))
+    elif table in ['first_hour','second_hour']:
+        return htmlg.family_edit_form(id, err = str(err))
 
-    return ''
 
 
 @app.route("/blank_endpoint")

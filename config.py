@@ -26,10 +26,10 @@ def ARGS_DICT() -> dict[str,list[str]]:
     return {
         "children": [
             "first_name",
+             "birthday",
              "family_id",
              "first_id",
              "second_id",
-             "birthday",
              "grade_offset"],
         "families": [
             "parent_mn",
@@ -67,11 +67,9 @@ def AVAILABLE_ARGS(op: str, table: str):
         return [
             "first_name",
              "family_id",
-             "first_id",
-             "second_id",
+             "first_hour",
+             "second_hour",
              "birthday",
-             "first_hour_class_name",
-             "second_hour_class_name",
              "grade_offset"]
 
     return ARGS_DICT()[table]

@@ -30,7 +30,7 @@ def generate_random_family(connection: sqlite3.Connection) -> int:
     out["state"] = list(gc.get_us_states().keys())[randint(0,50)]
 
 
-    out["zip"]= randint(1,99999)
+    out["zip"]= randint(10000,99999)
     out["phone1"] = randint(1,9999999999)
     out["phone2"] = randint(1,9999999999)
     out["phone3"] = "null"

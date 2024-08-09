@@ -59,7 +59,7 @@ def to_grade(birthday:datetime.date, offset:int) -> str:
     return grades[ind+offset]
 
 def to_grade_pd(data) -> str:
-    ic(data)
+    ic()
     return to_grade(data.birthday, data.grade_offset)
 
 

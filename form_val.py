@@ -100,5 +100,3 @@ def validate_form(table: str, form_data: dict[str,str]) -> dict[str,Any]:
         return out_dict
     else:
         raise ValidationException(f"table name is neither children nor families nor first_hour nor second_hour but {table}")
-
-    return {}

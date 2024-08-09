@@ -11,7 +11,7 @@ CREATE TABLE families(
 	phone2 INTEGER NOT NULL,
 	phone3 INTEGER,
 	email TEXT NOT NULL,
-	is_member BOOLEAN NOT NULL,
+	is_member TEXT NOT NULL,
 	note TEXT
 );
 CREATE TABLE children(

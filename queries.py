@@ -37,8 +37,6 @@ def exec_query(connection : sqlite3.Connection,
     except sqlite3.IntegrityError as e:
         raise e
     except Exception as e:
-        ic(query)
-        ic(type(query))
         if not params is None:
             ic(params)
         raise e
@@ -78,6 +76,8 @@ def db_action(connection: sqlite3.Connection,
             if slot in input_options:
                 params.append(input_options[slot])
             else:
+                errstr = f"{slot} was expected and is not present db_action input"
+                ic(errstr)
                 strikes += 1
                 if strikes >= MAX_STRIKES:
                     raise Exception(f'you filled {strikes} wrong entries. You\'re out')
@@ -88,6 +88,7 @@ def db_action(connection: sqlite3.Connection,
 
     if type(out) == sqlite3.Cursor:
         out = out.fetchall()
+
     if op in ["edit","add"]:
         rep_commit(connection)
     if op == "add":
@@ -101,6 +102,7 @@ def rep_commit(connection: sqlite3.Connection):
         connection.commit()
     except sqlite3.OperationalError as e:
         ic(e)
+        rep_commit(connection)
 
 
 
