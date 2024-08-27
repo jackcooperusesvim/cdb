@@ -31,11 +31,11 @@ def generate_random_family(connection: sqlite3.Connection) -> int:
 
 
     out["zip"]= randint(10000,99999)
-    out["phone1"] = randint(1,9999999999)
-    out["phone2"] = randint(1,9999999999)
+    out["phone1"] = randint(1000000000,9999999999)
+    out["phone2"] = randint(1000000000,9999999999)
     out["phone3"] = "null"
     if randint(0,1) == 1:
-        out["phone3"] = randint(1,9999999999)
+        out["phone3"] = randint(1000000000,9999999999)
 
     email_options = ["gmail.com","outlook.office.com","proton.me","yahoo.com"]
 
@@ -88,6 +88,32 @@ def generate_random_class(connection: sqlite3.Connection, table: str):
 
 
 def generate_testing_db():
+    init_db()
+    connection = new_conn()
+    parent_indices = []
+    first_hour_indices = []
+    second_hour_indices = []
+    for i in range(PERM_NUM_FAMILIES):
+        parent_indices.append(generate_random_family(connection))
+
+    for i in range(PERM_NUM_CLASSES):
+        try:
+            second_hour_indices.append(generate_random_class(connection,"second_hour"))
+        except sqlite3.IntegrityError as e:
+            ic(e)
+    for i in range(PERM_NUM_CLASSES):
+        try:
+            first_hour_indices.append(generate_random_class(connection,"first_hour"))
+        except sqlite3.IntegrityError as e:
+            ic(e)
+
+
+    for i in range(PERM_NUM_CHILDREN):
+        generate_random_child(connection,parent_indices,first_hour_indices,second_hour_indices)
+
+    connection.commit()
+
+def generate_turso_testing_db():
     init_db()
     connection = new_conn()
     parent_indices = []

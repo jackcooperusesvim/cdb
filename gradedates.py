@@ -1,7 +1,6 @@
 import datetime
 from icecream import ic
 import config
-import pandas as pd
 
 
 def END_DATE(offset: int = 0) -> datetime.date:
@@ -66,7 +65,7 @@ def to_grade_pd(data) -> str:
 def from_grade(birthday: datetime.date, grade:str) -> int:
     grades = list(GRADE_DICT())
     normal_grade = to_grade(birthday,0)
-    return grades.index(normal_grade)-grades.index(grade)
+    return grades.index(grade)-grades.index(normal_grade)
 
 def str_to_dt(date_string: str) -> datetime.date:
     date = datetime.datetime.strptime(date_string,"%Y-%m-%d")

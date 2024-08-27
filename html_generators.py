@@ -14,11 +14,47 @@ def generate_header(data:pd.DataFrame) -> str:
     out +="</tr>"
     return out
 
+def form_buttons(id: int | None, table:str, new: bool = False):
+    if new:
+        return f'''<button id="cancel" {headers(id,table)} hx-get="/new_record_button" hx-swap="innerHTML" hx-target="#forms">Cancel</button>
+
+        <br>
+
+        <button id="reset" {headers(id,table)} hx-get="/form" hx-swap="innerHTML" hx-target="#forms">Reset</button><br>
+        <br>
+
+        <button id="submit" {headers(id,table)} hx-post="/submit_new" hx-target="#forms">Submit</button>'''
+
+    else:
+        return f'''<button id="cancel" {headers(id,table)} hx-get="/new_record_button" hx-swap="innerHTML" hx-target="#forms">Cancel</button>
+
+        <br>
+
+        <button id="reset" {headers(id,table)} hx-get="/form" hx-swap="innerHTML" hx-target="#forms">Reset</button><br>
+        <br>
+
+        <button id="submit" {headers(id,table)} hx-post="/submit" hx-target="#forms">Submit</button>
+        <div hx-sync="from:#submit" {headers(id,table)} hx-swap="innerHTML" hx-target="#forms" hx-get="/new_record_button"></div><br>'''
+ 
 def error_message(message:str):
     return f'<h4>{message}</h4><br>'
 
 def edit_button(id: int,table: str):
     return f'<td><button onclick="top_scroll()" hx-swap="outerHTML" hx-target="#record{str(id)}" {headers(id,table)}  hx-get="/form_loader">{str(id)}</button></td>'
+
+def add_button(table: str):
+    return f'<button hx-swap="innerHTML" {headers(None,table)} hx-target="#forms" hx-get="/new_record_form">add</button>'
+
+def add_button_loader(table:str):
+    return f'<div hx-swap="innerHTML" {headers(None,table)} hx-trigger="load" hx-target="#forms" hx-get="/new_record_button"></div>'
+
+def table_reloader(table: str):
+    out = f'''
+    <div class='table_reloader' id='loada' hx-trigger='load' hx-swap='outerHTML' hx-get='/{table}_table' hx-target='.table'></div>
+
+    <div class='table_reloader' hx-sync='#loada:queue first' hx-target='.table_reloader' hx-swap='delete' hx-trigger='load' hx-get='/blank_endpoint'></div>'''
+    ic(out)
+    return out
 
 def list_to_options(in_list: list[str], current_option: str):
     out = ""
@@ -33,6 +69,7 @@ def list_to_options(in_list: list[str], current_option: str):
     return out
 
 def child_edit_form(id: int, err:str = ''):
+    table = "children"
     connection = new_conn()
 
     if err != '':
@@ -59,6 +96,16 @@ def child_edit_form(id: int, err:str = ''):
     if id == -1:
         grade, first_name,family,class_one, class_two, birthday, grade_offset = '','','','','',str(datetime.datetime.today().date),0
         grade_section = adj_grades
+        auto_calc_grades = ["Auto Calc"]
+        auto_calc_grades = list_to_options(auto_calc_grades,auto_calc_grades[0])
+        grade_section = f'''
+        <optgroup label="Auto Calc">
+        {auto_calc_grades}
+        </optgroup>
+        <optgroup label="Manual Offset">
+        {adj_grades}
+        </optgroup>'''
+
     else:
 
         _, first_name,family,class_one, class_two, birthday, grade_offset = connection.execute(q).fetchall()[0]
@@ -72,7 +119,7 @@ def child_edit_form(id: int, err:str = ''):
         <optgroup label="Auto Calc">
         {auto_calc_grades}
         </optgroup>
-        <optgroup label="Offset Grade">
+        <optgroup label="Manual Offset">
         {adj_grades}
         </optgroup>'''
 
@@ -112,15 +159,8 @@ def child_edit_form(id: int, err:str = ''):
 
     <br>
 
-    <button id="cancel" hx-get="/blank_endpoint" hx-swap="delete" hx-target="#form{id}">Cancel</button>
-
-    <br>
-
-    <button id="reset" {headers(id,"children")} hx-get="/form" hx-swap="outerHTML" hx-target="#form{id}">Reset</button><br>
-    <br>
-
-    <button id="submit" {headers(id, "children")} hx-post="/submit" hx-swap="delete" hx-target="#form{id}">Submit</button><br>
-    <br>
+    {form_buttons(id,table)}
+   <br>
     </form>'''
 
 def is_member_options(is_member: bool) -> str:
@@ -130,14 +170,14 @@ def is_member_options(is_member: bool) -> str:
     return membopts
 
 def family_edit_form(id: int, err:str = ''):
+    table = "families"
     if err != '':
         err = error_message(err)
     connection = new_conn()
-    id, parent_mn, parent_sec, last_name, street, city, state, zip, phone1, phone2, phone3, email, is_member, note = db_action(connection, "get_data","families", where_id = id)[0]
-    if is_member == "False":
-        is_member = False
-    if is_member == "True":
-        is_member = True
+    if id == -1:
+        id, parent_mn, parent_sec, last_name, street, city, state, zip, phone1, phone2, phone3, email, is_member, note = '-1','','','','','','','','','','','',"False",''
+    else:
+        id, parent_mn, parent_sec, last_name, street, city, state, zip, phone1, phone2, phone3, email, is_member, note = db_action(connection, "get_data","families", where_id = id)[0]
 
     return f'''<form id="form{id}">
     {err}
@@ -184,24 +224,19 @@ def family_edit_form(id: int, err:str = ''):
         <label for="note">Note:</label><br>
         <input type="text" name="note" id="note" value="{note}"><br>
 
-        <br>
-
-        <button id="cancel" hx-get="/blank_endpoint" hx-swap="delete" hx-target="#form{id}">Cancel</button><br>
-
-
-        <button id="reset" {headers(id,"families")} hx-get="/form" hx-swap="outerHTML" hx-target="#form{id}">Reset</button><br>
-        <br>
-
-        <button id="submit" {headers(id, "families")} hx-post="/submit" hx-swap="outerHTML" hx-target="#form{id}">Submit</button><br>
-        <br>
+    {form_buttons(id,table)}
         </form>'''
 
 
 
 def class_edit_form(id: int, hour: str, err:str = ''):
     ic(hour)
-    connection = new_conn()
-    _, class_name, desc, member_cost, regular_cost = db_action(connection, "get_data",hour, where_id = id)[0]
+    table = hour
+    if id == -1:
+         class_name, desc, member_cost, regular_cost = "","",0,0
+    else:
+        connection = new_conn()
+        _, class_name, desc, member_cost, regular_cost = db_action(connection, "get_data",hour, where_id = id)[0]
     if err != '':
         err = error_message(err)
 
@@ -221,14 +256,9 @@ def class_edit_form(id: int, hour: str, err:str = ''):
         <label for="regular_cost">Regular Cost:</label><br>
         <input type="number" name="regular_cost" id="regular_cost" value="{regular_cost}"><br>
 
-        <button id="cancel" hx-get="/blank_endpoint" hx-swap="delete" hx-target="#form{id}">Cancel</button><br>
-
-        <button id="reset" {headers(id,hour)} hx-get="/form" hx-swap="outerHTML" hx-target="#form{id}">Reset</button><br>
-        <br>
-
-        <button id="submit" {headers(id,hour)} hx-post="/submit" hx-swap="outerHTML" hx-target="#form{id}">Submit</button><br>
-        <br>
-        </form>'''
+    
+    {form_buttons(id,table)}
+   </form>'''
 
 
 
@@ -237,6 +267,12 @@ def headers(id: int | None, table: str):
         return f'''hx-headers=\'{{"table": "{table}"}}\''''
     else:
         return f'''hx-headers=\'{{"id": "{id}", "table": "{table}"}}\''''
+
+def add_form_loader(table:str):
+    return f''' <div class='add_form_loader' {headers(None,table)} hx-trigger='load' hx-swap='innerHTML' hx-get='/new_record' hx-target='#forms'></div>
+
+    <div class='add_form_loader' hx-sync='#loada:queue first' hx-target='.add_form_loader' hx-swap='delete' hx-trigger='load' hx-get='/blank_endpoint'></div>'''
+
 
 def blank_row(data,table):
 
@@ -256,7 +292,7 @@ def blank_row(data,table):
     return out
 
 def html_table_records(data: pd.DataFrame,table:str):
-    out = ""
+    out = ''
     for _, record in data.iterrows():
         id = record.id
         record_str = f'<tr {headers(id,table)} id=record{str(id)}>'
@@ -272,9 +308,10 @@ def html_table(data: pd.DataFrame, table: str) -> str:
     if table == "children":
         data['grade'] = data.apply(gradedates.to_grade_pd,axis=1)
 
-    out = "<table border=1 class='table'>"+generate_header(data)
+    out = "<div class='table'>"+add_button_loader(table)
+    out += "<table border='1'>"+generate_header(data)
     out += html_table_records(data, table)
-    out += "</table>"
+    out += "</table></div>"
 
     return out
 

@@ -1,3 +1,6 @@
 __pycache__/
 data/*
+secrets/
 CoopData.db
+test.db
+

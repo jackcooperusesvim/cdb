@@ -2,13 +2,14 @@ import sqlite3
 from icecream import ic
 import config
 import pandas as pd
-import datetime
 from typing import Any
-
-import datetime
+import libsql_experimental as libsql
 
 def new_conn():
     return sqlite3.connect(config.DATABASE_FILEPATH())
+def new_turso_conn():
+    return sqlite3.connect(config.DATABASE_FILEPATH())
+
 
 def get_query(op: str, table: str) -> str:
     config.CERTIFY_OP_AND_TABLE(op,table)
@@ -24,9 +25,18 @@ def init_db():
 
     connection.commit()
 
-def exec_query(connection : sqlite3.Connection,
+def init_turso_db(url: str, token: str):
+    connection = libsql.connect(url,auth_token=token)
+    file = read_query("queries/init.sql")
+    queries = file.split(";")
+    for query in queries:
+        exec_query(connection,query)
+
+
+def exec_query(connection : sqlite3.Connection | libsql.Connection,
                query : str,
-               params : list[str] | None = None, return_pd = False) -> sqlite3.Cursor | pd.DataFrame:
+               params : list[str] | None = None, return_pd = False) -> sqlite3.Cursor | libsql.Cursor | pd.DataFrame:
+
     if return_pd:
         return pd.read_sql_query(query,connection, params = params)
     try:
