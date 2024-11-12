@@ -24,7 +24,6 @@ def init_db():
         exec_query(connection,query)
 
     connection.commit()
-
 def init_turso_db(url: str, token: str):
     connection = libsql.connect(url,auth_token=token)
     file = read_query("queries/init.sql")
