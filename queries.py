@@ -18,7 +18,7 @@ def exec_query_pandas(connection: sqlite3.Connection,query:str) -> list[pd.DataF
             results.append(pd.read_sql_query(query,connection))
     return results
 
-def rc(Str:str,char:str) -> str:
+def __rc(Str:str,char:str) -> str:
     return " ".join(Str.split(char))
 
 def read_queries(query: str) -> list[str]:
@@ -26,7 +26,7 @@ def read_queries(query: str) -> list[str]:
     queries = []
     with open(config.QUERY_DIR()+"/"+query+".sql") as file:
         for query in file.read().split(";"):
-            query = rc(rc(query,'\t'),'\n')
+            query = __rc(__rc(query,'\t'),'\n')
             if query != '':
                 queries.append(query)
     return queries

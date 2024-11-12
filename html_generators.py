@@ -66,7 +66,7 @@ def child_edit_form(id: int):
     <input type="text" id="first_name" value="{str(data.first_name.iloc[0])}"><br>
 
     <label for="birthday">Birthday:</label><br>
-    <input type="date" id="birthday" name="birthday" value="{data.birthday.iloc[0]}"><br>
+    <input type="date" id="birthday" name="birthday" value="{birthday}"><br>
 
     <label for="first_id">Class One:</label><br>
     <select name="first_id" id="first_id">

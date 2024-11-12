@@ -1,4 +1,4 @@
-CREATE TABLE families(
+CREATE TABLE IF NOT EXISTS families(
 	id INTEGER PRIMARY KEY,
 	parent_mn TEXT NOT NULL,
 	parent_sec TEXT NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE families(
 	is_member BOOLEAN NOT NULL,
 	note TEXT
 );
-CREATE TABLE children(
+CREATE TABLE IF NOT EXISTS children(
 	id INTEGER PRIMARY KEY,
 	first_name TEXT NOT NULL,
 	birthday TEXT NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE children(
 	FOREIGN KEY(family_id) REFERENCES family(id)
 );
 
-CREATE TABLE classes(
+CREATE TABLE IF NOT EXISTS classes(
 	id INTEGER PRIMARY KEY,
 	class_name TEXT UNIQUE NOT NULL,
 	desc TEXT,
