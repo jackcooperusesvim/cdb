@@ -30,12 +30,12 @@ def generate_random_family(connection: sqlite3.Connection) -> int:
     out["state"] = list(gc.get_us_states().keys())[randint(0,50)]
 
 
-    out["zip"]= randint(1,99999)
-    out["phone1"] = randint(1,9999999999)
-    out["phone2"] = randint(1,9999999999)
+    out["zip"]= randint(700,99999)
+    out["phone1"] = randint(1000000000,9999999999)
+    out["phone2"] = randint(1000000000,9999999999)
     out["phone3"] = "null"
     if randint(0,1) == 1:
-        out["phone3"] = randint(1,9999999999)
+        out["phone3"] = randint(1000000000,9999999999)
 
     email_options = ["gmail.com","outlook.office.com","proton.me","yahoo.com"]
 

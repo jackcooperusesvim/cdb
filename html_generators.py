@@ -124,10 +124,10 @@ def family_edit_form(id: int, err:str = ''):
     if err != '':
         err = error_message(err)
     connection = new_conn()
-    id, parent_mn, parent_sec, last_name, street, city, state, zip, phone1, phone2, phone3, email, is_member, note = db_action(connection, "get_data","families", where_id = id)[0]
-    if is_member == "False":
+    id, parent_mn, parent_sec, last_name, street, city, state, zip, phone1, phone2, phone3, email, is_member_str, note = db_action(connection, "get_data","families", where_id = id)[0]
+    if is_member_str == "False":
         is_member = False
-    if is_member == "True":
+    if is_member_str == "True":
         is_member = True
 
     return f'''<form id="form{id}">

@@ -15,9 +15,9 @@ def validate_form(table: str, form_data: dict[str,str]) -> dict[str,Any]:
 
         is_member: bool
         if form_data["is_member"] == "False":
-            is_member =  False
+            is_member =  "False"
         elif form_data["is_member"]  == "True":
-            is_member = True
+            is_member = "True"
         else:
             raise ValidationException(f"membership status is neither True nor False but is {form_data["is_member"]}")
 
